@@ -10,18 +10,21 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class WordCount {
+public class WordPairCount {
 
     public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
         private final static IntWritable one = new IntWritable(1);
-        private Text word = new Text();
-
+        
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer tokenizer = new StringTokenizer(line);
-            while (tokenizer.hasMoreTokens()) {
-                word.set(tokenizer.nextToken());
-                context.write(word, one);
+            String previousWord = "";
+	    while (tokenizer.hasMoreTokens()) {
+                String currentWord = tokenizer.nextToken();
+		if (previousWord != "") {
+		    context.write(new Text(previousWord + " " + currentWord), one);
+		}
+                previousWord = currentWord;
             }
         }
     }
@@ -40,7 +43,7 @@ public class WordCount {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        Job job = new Job(conf, "wordcount");
+        Job job = new Job(conf, "wordpaircount");
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
@@ -54,7 +57,7 @@ public class WordCount {
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        job.setJarByClass(WordCount.class);
+        job.setJarByClass(WordPairCount.class);
         job.waitForCompletion(true);
     }
 
