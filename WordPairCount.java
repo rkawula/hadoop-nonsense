@@ -10,55 +10,39 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class WordPairCount {
+public class WordCount {
 
-    public static class Map extends Mapper<LongWritable, Text, WordPairWritable, IntWritable> {
+    public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
         private final static IntWritable one = new IntWritable(1);
+        private Text word = new Text();
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer tokenizer = new StringTokenizer(line);
-            String previousToken = "";
             while (tokenizer.hasMoreTokens()) {
-                String currentToken = tokenizer.nextToken());
-                if (previousToken != "") {
-                    WordPairWritable wpw = new WordPairWritable(previousToken, currentToken);
-                    context.write(wpw, one);
-                }
-                previousToken = currentToken;
+                word.set(tokenizer.nextToken());
+                context.write(word, one);
             }
         }
     }
 
-    public static class Reduce extends Reducer<WordPairWritable, IntWritable, WordPairWritable, IntWritable> {
+    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
 
-        public void reduce(WordPairWritable keyPair, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             int sum = 0;
             for (IntWritable val : values) {
                 sum += val.get();
             }
-            context.write(keyPair, new IntWritable(sum));
+            context.write(key, new IntWritable(sum));
         }
-    }
-
-    public static class WordPairWritable extends ArrayWritable {
-
-        Text[] words = new Text[2];
-
-        public WordPairWritable(Text first, Text second) {
-            super(WordPairWritable.class);
-            words[0] = first;
-            words[1] = second;
-        }
-
     }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        Job job = new Job(conf, "wordpaircount");
+        Job job = new Job(conf, "wordcount");
 
-        job.setOutputKeyClass(WordPairWritable.class);
+        job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 
         job.setMapperClass(Map.class);
@@ -70,7 +54,7 @@ public class WordPairCount {
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        job.setJarByClass(WordPairCount.class);
+        job.setJarByClass(WordCount.class);
         job.waitForCompletion(true);
     }
 
