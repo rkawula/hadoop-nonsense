@@ -21,8 +21,8 @@ public class WordPairCount {
             String previousWord = "";
 	        while (tokenizer.hasMoreTokens()) {
                 // Strip words; remove punctuation, except for _ and -
-                String currentWord = tokenizer.nextToken().toLowerCase().replaceAll("[^a-zA-Z0-9-]", "");
-		        if (previousWord != "" && currentWord != "") {
+                String currentWord = tokenizer.nextToken().toLowerCase().replaceAll("[,.\"]", "");
+		        if (previousWord.equals("") && currentWord.equals("")) {
 		            context.write(new Text(previousWord + " " + currentWord), one);
 		        }
                 previousWord = currentWord;
