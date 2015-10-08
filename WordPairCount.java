@@ -20,7 +20,6 @@ public class WordPairCount {
             StringTokenizer tokenizer = new StringTokenizer(line);
             String previousWord = "";
 	    while (tokenizer.hasMoreTokens()) {
-                // Strip words; remove punctuation, except for _ and -
                 String currentWord = tokenizer.nextToken().toLowerCase().replaceAll("\\W", "");
                 if (!previousWord.equals("") && !currentWord.equals("")) {
 		    context.write(new Text(previousWord + " " + currentWord), one);
