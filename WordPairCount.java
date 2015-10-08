@@ -19,13 +19,14 @@ public class WordPairCount {
             String line = value.toString();
             StringTokenizer tokenizer = new StringTokenizer(line);
             String previousWord = "";
-	        while (tokenizer.hasMoreTokens()) {
+	    while (tokenizer.hasMoreTokens()) {
                 // Strip words; remove punctuation, except for _ and -
-                String currentWord = tokenizer.nextToken().toLowerCase().replaceAll("[,.!\"]", "");
-		        if (previousWord.equals("") && currentWord.equals("")) {
-		            context.write(new Text(previousWord + " " + currentWord), one);
-		        }
-                previousWord = currentWord;
+                String currentWord = tokenizer.nextToken().toLowerCase().replaceAll("\\W", "");
+                if (!previousWord.equals("") && !currentWord.equals("")) {
+		    context.write(new Text(previousWord + " " + currentWord), one);
+		} else if (!currentWord.equals("") {
+                    previousWord = currentWord;
+                }
             }
         }
     }
